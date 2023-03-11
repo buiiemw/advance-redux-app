@@ -1,5 +1,4 @@
 import Avatar from "@mui/material/Avatar";
-import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import Link from "@mui/material/Link";
 import Grid from "@mui/material/Grid";
@@ -7,13 +6,15 @@ import Box from "@mui/material/Box";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
-
-import { Link as RouterLink } from "react-router-dom";
+import { Link as RouterLink, useNavigate } from "react-router-dom";
+import { LoadingButton } from "@mui/lab";
 
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import YupPassword from 'yup-password'
+import { toast } from "react-hot-toast";
+import { registerUser } from "../services/auth.service";
 YupPassword(yup) // extend yup
 
 function Copyright(props: any) {
@@ -35,6 +36,8 @@ function Copyright(props: any) {
 }
 
 export default function RegisterPage() {
+  const navigate = useNavigate();
+
   const schema = yup.object().shape({
     firstName: yup.string().required("ป้อนข้อมูลชื่อด้วย"),
     lastName: yup.string().required("ป้อนข้อมูลนามสกุลด้วย"),
@@ -47,11 +50,25 @@ export default function RegisterPage() {
 
   type FormData = yup.InferType<typeof schema>;
 
-  const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: yupResolver(schema),
     mode: "all"
   });
-  const onSubmit = (data: FormData) => console.log(data);
+  const onSubmit = async (data: FormData) => {
+    try {
+      const userCredential = await registerUser(data.firstName, data.lastName, data.email, data.password!);
+      if (userCredential.user) {
+        toast.success("ลงทะเบียนสำเร็จ");
+        navigate("/login");
+      }
+    } catch (error: any) {
+      if (error.code === "auth/email-already-in-use") {
+        toast.error("มีผู้ใช้งานอีเมล์นี้ในระบบแล้ว");
+      } else {
+        toast.error(error.message);
+      }
+    }
+  };
 
   return (
     <>
@@ -115,14 +132,16 @@ export default function RegisterPage() {
                 />
               </Grid>
             </Grid>
-            <Button
+            <LoadingButton
               type="submit"
               fullWidth
               variant="contained"
               sx={{ mt: 3, mb: 2 }}
+              loading={isSubmitting}
+              loadingIndicator="กำลังลงทะเบียน รอสักครู่..."
             >
               ลงทะเบียน
-            </Button>
+            </LoadingButton>
             <Grid container justifyContent="center" spacing={2}>
               <Grid item>
                 <Link variant="body2" component={RouterLink} to="/">

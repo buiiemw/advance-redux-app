@@ -1,15 +1,21 @@
-import * as React from "react";
 import Avatar from "@mui/material/Avatar";
-import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import Checkbox from "@mui/material/Checkbox";
 import Link from "@mui/material/Link";
 import Grid from "@mui/material/Grid";
 import Box from "@mui/material/Box";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
+import { Link as RouterLink, useNavigate } from "react-router-dom";
+import { LoadingButton } from "@mui/lab";
+
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
+import YupPassword from "yup-password";
+import { toast } from "react-hot-toast";
+import { login } from "../services/auth.service";
+YupPassword(yup); // extend yup
 
 function Copyright(props: any) {
   return (
@@ -21,7 +27,7 @@ function Copyright(props: any) {
     >
       {"Copyright © "}
       <Link color="inherit" href="https://mui.com/">
-        Your Website
+        ระบบลาออนไลน์
       </Link>{" "}
       {new Date().getFullYear()}
       {"."}
@@ -29,14 +35,48 @@ function Copyright(props: any) {
   );
 }
 
-export default function Login() {
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    console.log({
-      email: data.get("email"),
-      password: data.get("password"),
-    });
+export default function LoginPage() {
+  const navigate = useNavigate();
+
+  const schema = yup.object().shape({
+    email: yup
+      .string()
+      .required("ป้อนอีเมลล์ด้วย")
+      .email("รูปแบบอีเมล์ไม่ถุกต้อง"),
+    password: yup
+      .string()
+      .required("ป้อนรหัสผ่านด้วย")
+      .min(6, "รหัสผ่านอย่างน้อย 6 ตัวอักษรขึ้นไป")
+      .minSymbols(1, "ต้องมีอักษรพิเศษอย่างน้อย 1 ตัวขึ้นไป")
+      .minUppercase(1, "รหัสผ่านต้องมีตัวพิมพ์ใหญ่อย่างน้อย 1 ตัวขึ้นไป"),
+  });
+
+  type FormData = yup.InferType<typeof schema>;
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<FormData>({
+    resolver: yupResolver(schema),
+    mode: "all",
+  });
+  const onSubmit = async (data: FormData) => {
+    try {
+      const userCredential = await login(data.email, data.password!);
+      if (userCredential.user) {
+        toast.success("เข้าระบบสำเร็จ");
+        navigate("/dashboard");
+      }
+    } catch (error: any) {
+      if (error.code === "auth/wrong-password") {
+        toast.error("รหัสผ่านไม่ถูกต้อง");
+      } else if (error.code === "auth/user-not-found") {
+        toast.error("ไม่พบผู้ใช้นี้ในระบบ");
+      } else {
+        toast.error(error.message);
+      }
+    }
   };
 
   return (
@@ -54,61 +94,55 @@ export default function Login() {
             <LockOutlinedIcon />
           </Avatar>
           <Typography component="h1" variant="h5">
-            Sign in
+            เข้าสู่ระบบ
           </Typography>
           <Box
             component="form"
-            onSubmit={handleSubmit}
             noValidate
-            sx={{ mt: 1 }}
+            onSubmit={handleSubmit(onSubmit)}
+            sx={{ mt: 3 }}
           >
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              id="email"
-              label="Email Address"
-              name="email"
-              autoComplete="email"
-              autoFocus
-            />
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              name="password"
-              label="Password"
-              type="password"
-              id="password"
-              autoComplete="current-password"
-            />
-            <FormControlLabel
-              control={<Checkbox value="remember" color="primary" />}
-              label="Remember me"
-            />
-            <Button
+            <Grid container spacing={2}>
+              <Grid item xs={12}>
+                <TextField
+                  {...register("email")}
+                  error={errors.email ? true : false}
+                  helperText={errors.email && errors.email.message}
+                  label="Email Address"
+                  fullWidth
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  {...register("password")}
+                  error={errors.password ? true : false}
+                  helperText={errors.password && errors.password.message}
+                  label="Password"
+                  type="password"
+                  fullWidth
+                />
+              </Grid>
+            </Grid>
+            <LoadingButton
               type="submit"
               fullWidth
               variant="contained"
               sx={{ mt: 3, mb: 2 }}
+              loading={isSubmitting}
+              loadingIndicator="กำลังเข้าระบบ รอสักครู่..."
             >
-              Sign In
-            </Button>
-            <Grid container>
-              <Grid item xs>
-                <Link href="#" variant="body2">
-                  Forgot password?
-                </Link>
-              </Grid>
+              Log In
+            </LoadingButton>
+            <Grid container justifyContent="center" spacing={2}>
               <Grid item>
-                <Link href="#" variant="body2">
-                  {"Don't have an account? Sign Up"}
+                <Link variant="body2" component={RouterLink} to="/">
+                  กลับหน้าหลัก
                 </Link>
               </Grid>
             </Grid>
           </Box>
         </Box>
-        <Copyright sx={{ mt: 8, mb: 4 }} />
+        <Copyright sx={{ mt: 5 }} />
       </Container>
     </>
   );

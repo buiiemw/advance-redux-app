@@ -3,6 +3,7 @@ import HomePage from "../pages/home-page";
 import Login from "../pages/login-page";
 import { NotFoundPage } from "../pages/not-found-page";
 import RegisterPage from "../pages/register-page";
+import routeDashboard from "./dashboard";
 
 
 const router = createBrowserRouter([
@@ -22,6 +23,7 @@ const router = createBrowserRouter([
         path: '*',
         element: <NotFoundPage />,
     },
+    ...routeDashboard,
 ]);
 
 
