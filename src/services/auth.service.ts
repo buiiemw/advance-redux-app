@@ -5,7 +5,8 @@ import {
   signOut,
   UserCredential,
 } from "firebase/auth";
-import { getFirestore, setDoc, doc } from "firebase/firestore";
+import { getFirestore, setDoc, doc, getDoc } from "firebase/firestore";
+import { Account } from "../app-types/account.type";
 import { firebaseApp } from "../configs/firebase";
 
 const auth = getAuth(firebaseApp);
@@ -53,6 +54,28 @@ export async function login(
 export async function logout(): Promise<void> {
   try {
     signOut(auth);
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function getCurrentAccount(userId: string) {
+  try {
+    const accountRef = doc(db, "users", userId);
+    const docSnap = await getDoc(accountRef);
+
+    if (!docSnap.exists()) {
+      return null;
+    }
+
+    let accTmp = docSnap.data() as Account;
+
+    let account: Account = {
+      userId: userId,
+      ...accTmp,
+    };
+
+    return account;
   } catch (error) {
     throw error;
   }
