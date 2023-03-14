@@ -7,11 +7,11 @@ import { useAccount } from "../hooks/use-account";
 import { getCurrentAccountThunk } from "../redux-toolkit/auth/auth-thunk";
 import { useAppDispatch } from "../redux-toolkit/hooks";
 
-type AuthGuardPropType = {
-  children: React.ReactNode
-}
+type AdminGuardPropType = {
+  children: React.ReactNode;
+};
 
-const AuthGuard = (props: AuthGuardPropType) => {
+const AdminGuard = (props: AdminGuardPropType) => {
   const auth = getAuth(firebaseApp);
   const { account, isAuthLoading } = useAccount();
   const dispatch = useAppDispatch();
@@ -28,16 +28,16 @@ const AuthGuard = (props: AuthGuardPropType) => {
     });
     return () => {
       unsubscribe();
-    }
+    };
   }, []);
 
   if (isAuthLoading === true) return <CircularProgress />;
 
-  if (account === null) {
-    return <Navigate to="/login" />;
+  if (account?.role !== "admin") {
+    return <Navigate to="../permission-denied" />;
   }
 
   return <>{props.children}</>;
 };
 
-export default AuthGuard;
+export default AdminGuard;

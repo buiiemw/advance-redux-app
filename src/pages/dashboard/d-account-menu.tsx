@@ -8,16 +8,14 @@ import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
 import Tooltip from "@mui/material/Tooltip";
 import Logout from "@mui/icons-material/Logout";
-import { logout } from "../../services/auth.service";
+import { useAccount } from "../../hooks/use-account";
 import { useNavigate } from "react-router-dom";
-import { selectAuthState } from "../../redux-toolkit/auth/auth-slice";
-import { useAppSelector } from "../../redux-toolkit/hooks";
 
 export default function AccountMenu() {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
+  const { account, handleLogout } = useAccount();
   const navigate = useNavigate();
-  const { account } = useAppSelector(selectAuthState);
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -27,10 +25,10 @@ export default function AccountMenu() {
     setAnchorEl(null);
   };
 
-  const handleLogout = async () => {
-    await logout();
-    navigate("/");
-  };
+  const handleEditProfile = () => {
+    navigate("./edit-profile");
+  }
+
   return (
     <React.Fragment>
       <Box sx={{ display: "flex", alignItems: "center", textAlign: "center" }}>
@@ -46,7 +44,10 @@ export default function AccountMenu() {
             aria-haspopup="true"
             aria-expanded={open ? "true" : undefined}
           >
-            <Avatar sx={{ width: 32, height: 32 }}>M</Avatar>
+            <Avatar
+              sx={{ width: 32, height: 32 }}
+              src={account?.photoUrl}
+            ></Avatar>
           </IconButton>
         </Tooltip>
       </Box>
@@ -85,7 +86,13 @@ export default function AccountMenu() {
         transformOrigin={{ horizontal: "right", vertical: "top" }}
         anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
       >
-        <MenuItem onClick={handleClose}>Profile</MenuItem>
+        <MenuItem onClick={handleEditProfile}>
+          <Avatar
+            sx={{ width: 32, height: 32 }}
+            src={account?.photoUrl}
+          ></Avatar>
+          แก้ไขข้อมูลส่วนตัว
+        </MenuItem>
         <MenuItem onClick={handleLogout}>
           <ListItemIcon>
             <Logout fontSize="small" />

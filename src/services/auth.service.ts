@@ -5,7 +5,7 @@ import {
   signOut,
   UserCredential,
 } from "firebase/auth";
-import { getFirestore, setDoc, doc, getDoc } from "firebase/firestore";
+import { getFirestore, setDoc, doc, getDoc, updateDoc } from "firebase/firestore";
 import { Account } from "../app-types/account.type";
 import { firebaseApp } from "../configs/firebase";
 
@@ -79,4 +79,12 @@ export async function getCurrentAccount(userId: string) {
   } catch (error) {
     throw error;
   }
+}
+
+// update account
+export async function updateAccount(userId: string, account: Account): Promise<void> {
+  await updateDoc(doc(db, "users", userId), {
+    firstName: account.firstName,
+    lastName: account.lastName,
+  });
 }

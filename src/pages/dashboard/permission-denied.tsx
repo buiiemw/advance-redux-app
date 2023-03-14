@@ -1,0 +1,5 @@
+const PermissionDenied = () => {
+  return <div>ไม่มีสิทธิใช้งานหน้านี้ เฉพาะ Admin เท่านั้น</div>;
+};
+
+export default PermissionDenied;

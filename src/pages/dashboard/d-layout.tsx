@@ -16,6 +16,7 @@ import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import { Outlet } from "react-router-dom";
 import { MainListItems } from "./d-menu";
 import AccountMenu from "./d-account-menu";
+import { withAuthGuard } from "../../hocs/with-auth-guard";
 
 function Copyright(props: any) {
   return (
@@ -144,7 +145,6 @@ function DashboardContent() {
           <List component="nav">
             <MainListItems />
             <Divider sx={{ my: 1 }} />
-
           </List>
         </Drawer>
         <Box
@@ -169,6 +169,9 @@ function DashboardContent() {
   );
 }
 
-export default function DLayout() {
+function DLayout() {
   return <DashboardContent />;
 }
+
+// ต้องล๊อกอินก่อนเท่านั้นถึงจะเข้าได้
+export default withAuthGuard(DLayout);

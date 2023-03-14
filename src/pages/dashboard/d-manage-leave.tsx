@@ -1,4 +1,4 @@
-import React from 'react'
+import { withAdminGuard } from '../../hocs/with-admin-guard'
 
 const DManageLeave = () => {
   return (
@@ -6,4 +6,4 @@ const DManageLeave = () => {
   )
 }
 
-export default DManageLeave
+export default withAdminGuard(DManageLeave);

@@ -2,6 +2,6 @@ export interface Account {
     userId?: string;
     firstName?: string;
     lastName?: string;
-    photo?: string;
+    photoUrl?: string;
     role?: string;
 }
